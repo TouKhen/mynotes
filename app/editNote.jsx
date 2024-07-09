@@ -3,17 +3,21 @@ import {
     View,
     StyleSheet,
     TextInput,
-    TouchableOpacity
+    TouchableOpacity,
+    Alert,
+    Modal,
+    Pressable
 } from "react-native";
 import {useState, useMemo, useEffect} from "react";
 import RadioGroup from 'react-native-radio-buttons-group';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useLocalSearchParams, useRouter} from 'expo-router';
-import note from "./note";
+import {FontAwesome} from "@expo/vector-icons";
 
 const noteForm = () => {
     const router = useRouter();
     const [noteData, setNoteData] = useState({});
+    const [modalVisible, setModalVisible] = useState(false);
     const [title, setTitle] = useState('');
     const [importance, setImportance] = useState('');
     const [text, setText] = useState('');
@@ -82,6 +86,21 @@ const noteForm = () => {
         }
     }
 
+    const deleteNote = async (id) => {
+        let noteIndex = 0;
+        for (let i = 0; i < noteData.length; i++) {
+            if (parseInt(id) === noteData[i].id) noteIndex = i;
+        }
+
+        try {
+            setNoteData(noteData.splice(noteIndex, 1));
+            await AsyncStorage.setItem('notes', JSON.stringify(noteData));
+            router.replace('');
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
     return (
         <View style={styles.pageContainer}>
             <Text style={styles.text}>Importance :</Text>
@@ -116,6 +135,41 @@ const noteForm = () => {
             <TouchableOpacity style={styles.submit} title="Add Note" onPress={() => {handleSubmit(title, importance, text)}}>
                 <Text style={styles.submitText}>Edit</Text>
             </TouchableOpacity>
+
+            <TouchableOpacity style={styles.remove} title="Add Note" onPress={() => setModalVisible(true)}>
+                <Text style={[styles.submitText, {color: "#FCFCFC"}]}>Delete</Text>
+            </TouchableOpacity>
+
+            <Modal
+                animationType="none"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                Alert.alert('Modal has been closed.');
+                setModalVisible(!modalVisible);
+                }}>
+                <View style={styles.centeredView}>
+                <View style={styles.modalView}>
+                    <FontAwesome size={28}  name="exclamation-triangle" color={"#F45869"}/>
+                    <Text style={styles.modalText}>Are you sure?</Text>
+                    <View style={styles.modalBtnContainer}>
+                        <Pressable
+                        style={[styles.button, styles.buttonClose]}
+                        onPress={() => setModalVisible(!modalVisible)}>
+                            <Text style={styles.textStyle}>Cancel</Text>
+                        </Pressable>
+                        <Pressable
+                        style={[styles.button, styles.buttonAccept]}
+                        onPress={() => {
+                            deleteNote(noteId);
+                            setModalVisible(!modalVisible);
+                        }}>
+                            <Text style={[styles.textStyle, {color: "#FCFCFC"}]}>Delete</Text>
+                        </Pressable>
+                    </View>
+                </View>
+                </View>
+            </Modal>
         </View>
     );
 }
@@ -155,6 +209,15 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         borderRadius: 10
     },
+    remove: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#F45869",
+        paddingVertical: 10,
+        borderRadius: 10,
+        marginTop: 10
+    },
     submitText: {
         color: "#1C1C1C",
         fontFamily: "Montserrat_600SemiBold",
@@ -164,5 +227,57 @@ const styles = StyleSheet.create({
         color: "#FCFCFC",
         fontFamily: "Montserrat_600SemiBold",
         textTransform: "uppercase"
-    }
+    },
+    centeredView: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 22,
+      },
+    modalView: {
+        margin: 20,
+        backgroundColor: "#1C1C1C",
+        borderRadius: 10,
+        padding: 35,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        border: "2px solid white",
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+      },
+      modalBtnContainer: {
+        display: "flex",
+        width: "100%",
+        flexDirection: "row",
+        justifyContent: "space-between",
+        gap: 15
+      },
+      button: {
+        borderRadius: 10,
+        padding: 10,
+        elevation: 2,
+      },
+      buttonClose: {
+        backgroundColor: '#FCFCFC',
+      },
+      buttonAccept: {
+        backgroundColor: "#F45869"
+      },
+      textStyle: {
+        fontFamily: "Montserrat_700Bold",
+        textAlign: 'center',
+        textTransform: "uppercase"
+      },
+      modalText: {
+        marginTop: 15,
+        marginBottom: 35,
+        fontFamily: "Montserrat_600SemiBold",
+        textAlign: 'center',
+        color: "#FCFCFC"
+      },
 });

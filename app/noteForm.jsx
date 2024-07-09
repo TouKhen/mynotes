@@ -76,38 +76,40 @@ const noteForm = () => {
 
     return (
         <View style={styles.pageContainer}>
-            <Text style={styles.text}>Importance :</Text>
+            <View style={styles.formContainer}>
+                <TextInput
+                    style={styles.input}
+                    title="title"
+                    placeholderTextColor="#FCFCFC80"
+                    placeholder="Title"
+                    onChangeText={newTitle => {setTitle(newTitle)}}
+                    defaultValue={title}
+                />
 
-            <RadioGroup
-                radioButtons={radioButtons}
-                onPress={setImportance}
-                selectedId={importance}
-                layout="row"
-                labelStyle={styles.radio}
-            />
-
-            <TextInput
-                style={[styles.input, {marginTop: 15}]}
-                title="title"
-                placeholderTextColor="#FCFCFC80"
-                placeholder="Title"
-                onChangeText={newTitle => {setTitle(newTitle)}}
-                defaultValue={title}
-            />
-
-            <TextInput
-                style={styles.input}
-                title="text"
-                placeholder="Text"
-                placeholderTextColor="#FCFCFC80"
-                multiline
-                numberOfLines={10}
-                onChangeText={newText => {setText(newText)}}
-                defaultValue={text}
-            />
-            <TouchableOpacity style={styles.submit} title="Add Note" onPress={() => {handleSubmit(title, importance, text)}}>
-                <Text style={styles.submitText}>Create</Text>
-            </TouchableOpacity>
+                <Text style={styles.text}>Importance :</Text>
+    
+                <RadioGroup
+                    radioButtons={radioButtons}
+                    onPress={setImportance}
+                    selectedId={importance}
+                    layout="row"
+                    labelStyle={styles.radio}
+                />
+    
+                <TextInput
+                    style={[styles.input, {marginTop: 15}]}
+                    title="text"
+                    placeholder="Text"
+                    placeholderTextColor="#FCFCFC80"
+                    multiline
+                    numberOfLines={10}
+                    onChangeText={newText => {setText(newText)}}
+                    defaultValue={text}
+                />
+                <TouchableOpacity style={styles.submit} title="Add Note" onPress={() => {handleSubmit(title, importance, text)}}>
+                    <Text style={styles.submitText}>Create</Text>
+                </TouchableOpacity>
+            </View>
         </View>
     );
 }
@@ -121,9 +123,14 @@ const styles = StyleSheet.create({
         color: "#FCFCFC",
         padding: 20,
     },
+    formContainer: {
+        backgroundColor: "#323232",
+        borderRadius: 10,
+        padding: 10
+    },
     text: {
         fontSize: 16,
-        fontFamily: "Montserrat_400Regular",
+        fontFamily: "Montserrat_500Medium",
         color: "#FCFCFC80",
         marginBottom: 5,
         marginLeft: 10

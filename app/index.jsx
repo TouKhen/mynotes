@@ -1,6 +1,4 @@
 import {Text, View, StyleSheet, FlatList} from "react-native";
-import {useFonts} from "expo-font";
-import * as SplashScreen from 'expo-splash-screen';
 import {useEffect, useState} from "react";
 import { Link } from 'expo-router';
 import {FontAwesome} from "@expo/vector-icons";
@@ -115,7 +113,7 @@ const styles = StyleSheet.create({
         fontFamily: "Montserrat_500Medium",
         fontSize: 14,
         color: "#FCFCFC",
-        marginBottom: 5,
+        marginBottom: 10,
         overflow: "hidden",
         textOverflow: "ellipsis",
         whiteSpace: "nowrap"
