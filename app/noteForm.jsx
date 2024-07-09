@@ -57,7 +57,7 @@ const noteForm = () => {
         let data = await getData();
 
         // if data is empty add noteJson inside array
-        if (!data) {
+        if (data.length === 0) {
             noteJson = {"id": 1, title, importance, text, "date": today};
             data = [noteJson];
         } else {

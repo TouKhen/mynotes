@@ -3,9 +3,11 @@ import {useEffect, useState} from "react";
 import { Link } from 'expo-router';
 import {FontAwesome} from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {useLocalSearchParams} from 'expo-router';
 
 export default function Index() {
     const [dataArray, setDataArray] = useState([]);
+    const {search} = useLocalSearchParams();
 
     useEffect(() => {
         const getData = async () => {
@@ -19,6 +21,10 @@ export default function Index() {
         getData();
     }, []);
 
+    // can't find a way to make it work without having errors
+    // let newData = dataArray.filter((item) => item.title.includes(search));
+    // setDataArray(newData);
+
     return (
         <View
             style={styles.pageContainer}
@@ -26,6 +32,10 @@ export default function Index() {
             <Text style={styles.counter}>{dataArray.length} Notes</Text>
 
             <Text style={styles.subTitle}>Notes</Text>
+
+            {dataArray.length === 0 ? (
+                <Text style={{display:"flex", flex: 1, justifyContent:"center", alignItems: "center", fontFamily: "Montserrat_400Regular", fontSize: 16, color: "#FCFCFC80"}}>Create a note</Text>
+            ) : null}
 
             <FlatList
                 style={{marginTop: 15}}
