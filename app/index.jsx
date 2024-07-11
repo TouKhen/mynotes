@@ -1,19 +1,23 @@
-import {Text, View, StyleSheet, FlatList} from "react-native";
+import {Text, View, StyleSheet, FlatList, TouchableOpacity, TextInput} from "react-native";
 import {useEffect, useState} from "react";
-import { Link } from 'expo-router';
+import { Link, Stack } from 'expo-router';
 import {FontAwesome} from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {useLocalSearchParams} from 'expo-router';
 
 export default function Index() {
+    const [searchVisible, setSearchVisible] = useState(false);
+    const [inputText, setInputText] = useState("");
     const [dataArray, setDataArray] = useState([]);
-    const {search} = useLocalSearchParams();
+    const [filteredDataArray, setFilteredDataArray] = useState([]);
 
     useEffect(() => {
         const getData = async () => {
             try {
                 const jsonValue = await AsyncStorage.getItem('notes');
-                return jsonValue != null ? setDataArray(JSON.parse(jsonValue)) : null;
+                if (jsonValue != null) {
+                    setFilteredDataArray(JSON.parse(jsonValue));
+                    return setDataArray(JSON.parse(jsonValue));
+                } else return null
             } catch (e) {
                 // error reading value
             }
@@ -21,14 +25,57 @@ export default function Index() {
         getData();
     }, []);
 
-    // can't find a way to make it work without having errors
-    // let newData = dataArray.filter((item) => item.title.includes(search));
-    // setDataArray(newData);
+    const search = (inputText) => {
+        let newData = dataArray;
+        newData = newData.filter((item) => item.title.toLowerCase().includes(inputText));
+        setFilteredDataArray(newData);
+    }
 
     return (
         <View
             style={styles.pageContainer}
         >
+            {/* HEADER */}
+            <Stack.Screen
+                options={{
+                    title: "MyNotes",
+                    headerBackVisible: false,
+                    headerLeft: ()=> null,
+                    headerStyle: {
+                        backgroundColor: "#252525",
+                        elevation: 0,
+                        shadowOpacity: 0,
+                        borderBottomWidth: 0,
+                    },
+                    headerTitleStyle: {
+                        color: "#FCFCFC",
+                        fontFamily: "Montserrat_700Bold",
+                        fontSize: 20
+                    },
+                    headerRight: () => (
+                        <View style={{display: "flex", flexDirection: "row"}}>
+                            <TouchableOpacity style={{marginRight: 20}} onPress={() => {
+                                setSearchVisible(!searchVisible);
+                            }}>
+                                {searchVisible? (
+                                    <FontAwesome size={28}  name="times" color={"#FCFCFC"}/>
+                                ): (
+                                    <FontAwesome size={28}  name="search" color={"#FCFCFC"}/>
+                                )}
+                            </TouchableOpacity>
+
+                            {searchVisible? (
+                                <TextInput value={inputText} onChangeText={(text) => {
+                                    setInputText(text);
+                                    search(text);
+                                }} autoFocus style={styles.searchInput} />
+                            ): null}
+                        </View>
+                    )
+                }}
+            />
+            {/* END OF HEADER */}
+
             <Text style={styles.counter}>{dataArray.length} Notes</Text>
 
             <Text style={styles.subTitle}>Notes</Text>
@@ -38,8 +85,8 @@ export default function Index() {
             ) : null}
 
             <FlatList
-                style={{marginTop: 15}}
-                data={dataArray}
+                style={[styles.cardList,{marginTop: 15}]}
+                data={filteredDataArray}
                 renderItem={({item}) => (
                     <Link href={{ pathname: "/note", params: {noteId: item.id}}} style={styles.card}>
                         <Text style={styles.dataTitle}>{item.title}</Text>
@@ -135,9 +182,9 @@ const styles = StyleSheet.create({
         alignItems: "center"
     },
     dataDate: {
-        fontFamily: "Montserrat_700Bold",
+        fontFamily: "Montserrat_500Medium",
         fontSize: 12,
-        color: "#FCFCFC"
+        color: "#FCFCFC80"
     },
     importance: {
         fontFamily: "Montserrat_700Bold",
@@ -156,5 +203,16 @@ const styles = StyleSheet.create({
     },
     importanceLow: {
         backgroundColor: "#456990"
-    }
+    },
+    searchInput: {
+        position: "absolute",
+        right: 60,
+        bottom: -5,
+        width: "calc(100vw - 70px)",
+        padding: 10,
+        fontSize: 18,
+        backgroundColor: "#1C1C1C",
+        color: "#FCFCFC",
+        fontFamily: "Montserrat_400Regular"
+      }
 });
