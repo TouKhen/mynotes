@@ -6,6 +6,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Index() {
     const [searchVisible, setSearchVisible] = useState(false);
+    const [listVisible, setListVisible] = useState(false);
     const [inputText, setInputText] = useState("");
     const [dataArray, setDataArray] = useState([]);
     const [filteredDataArray, setFilteredDataArray] = useState([]);
@@ -78,17 +79,32 @@ export default function Index() {
 
             <Text style={styles.counter}>{dataArray.length} Notes</Text>
 
-            <Text style={styles.subTitle}>Notes</Text>
+            <View style={{flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between"}}>
+                <Text style={styles.subTitle}>Notes</Text>
+                <TouchableOpacity onPress={() => {
+                        setListVisible(!listVisible);
+                }}>
+                    {listVisible? (
+                        <FontAwesome size={28}  name="list" color={"#FCFCFC"}/>
+                    ): (
+                        <FontAwesome size={28}  name="th-large" color={"#FCFCFC"}/>
+                    )}
+                </TouchableOpacity>
+            </View>
 
             {dataArray.length === 0 ? (
                 <Text style={{display:"flex", flex: 1, justifyContent:"center", alignItems: "center", fontFamily: "Montserrat_400Regular", fontSize: 16, color: "#FCFCFC80"}}>Create a note</Text>
             ) : null}
 
+            {listVisible? 
             <FlatList
-                style={[styles.cardList,{marginTop: 15}]}
+                key={'_'}
+                style={[{marginTop: 15}]}
                 data={filteredDataArray}
+                numColumns={2}
+                columnWrapperStyle={{gap: 10}}
                 renderItem={({item}) => (
-                    <Link href={{ pathname: "/note", params: {noteId: item.id}}} style={styles.card}>
+                    <Link href={{ pathname: "/note", params: {noteId: item.id}}} style={[styles.card, {width: "calc(50% - 5px)"}]}>
                         <Text style={styles.dataTitle}>{item.title}</Text>
                         <Text style={styles.dataText}>{item.text}</Text>
                         <View style={styles.cardInfos}>
@@ -106,6 +122,31 @@ export default function Index() {
                     </Link>
                 )}
             />
+            : <FlatList
+                key={'#'}
+                style={[{marginTop: 15}]}
+                data={filteredDataArray}
+                horizontal={false}
+                numColumns={1}
+                renderItem={({item}) => (
+                    <Link href={{ pathname: "/note", params: {noteId: item.id}}} style={[styles.card]}>
+                        <Text style={styles.dataTitle}>{item.title}</Text>
+                        <Text style={styles.dataText}>{item.text}</Text>
+                        <View style={styles.cardInfos}>
+                            {item.importance === "1" ?
+                                <Text style={[styles.importanceUrgent, styles.importance]}>Urgent</Text>
+                                : null}
+                            {item.importance === "2" ?
+                                <Text style={[styles.importanceNormal,styles.importance]}>Normal</Text>
+                                : null}
+                            {item.importance === "3" ?
+                                <Text style={[styles.importanceLow,styles.importance]}>Low</Text>
+                                : null}
+                            <Text style={styles.dataDate}>{item.date}</Text>
+                        </View>
+                    </Link>
+                )}
+            />}
 
             <Link style={styles.create} href="/noteForm">
                 <FontAwesome size={28} name="plus" color={"#252525"}/>
@@ -206,6 +247,7 @@ const styles = StyleSheet.create({
     },
     searchInput: {
         position: "absolute",
+        zIndex: 10,
         right: 60,
         bottom: -5,
         width: "calc(100vw - 70px)",
