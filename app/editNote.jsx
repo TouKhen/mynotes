@@ -61,7 +61,7 @@ const noteForm = () => {
                     return null
                 }
             } catch (e) {
-                // error reading value
+                console.error(e);
             }
         };
         getData();

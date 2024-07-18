@@ -43,7 +43,7 @@ const noteForm = () => {
             const jsonValue = await AsyncStorage.getItem('notes');
             return jsonValue != null ? JSON.parse(jsonValue) : null;
         } catch (e) {
-            // error reading value
+            console.error(e);
         }
     };
 

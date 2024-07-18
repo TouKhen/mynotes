@@ -15,6 +15,7 @@ const note = () => {
     const [favorite, setFavorite] = useState(false);
     const {noteId} = useLocalSearchParams();
 
+    // get all note but filter the one we need
     useEffect(() => {
         const getData = async () => {
             try {
@@ -28,7 +29,7 @@ const note = () => {
                     return null
                 }
             } catch (e) {
-                // error reading value
+                console.error(e);
             }
         };
         getData();
@@ -44,7 +45,7 @@ const note = () => {
                     return setNotesDataArray(data);
                 } else return null
             } catch (e) {
-                // error reading value
+                console.error(e);
             }
         };
         getData();
@@ -100,7 +101,7 @@ const note = () => {
                                     <FontAwesome size={28}  name="star-o" color={"#FFD4CA"}/>
                                 )}
                             </TouchableOpacity>
-                            
+
                             <Link href={{ pathname: "/editNote", params: {noteId: noteId}}} style={{marginRight: 20}} onPress={() => {}}>
                                 <FontAwesome size={28}  name="pencil" color={"#FFD4CA"}/>
                             </Link>

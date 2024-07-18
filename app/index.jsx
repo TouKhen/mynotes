@@ -29,7 +29,7 @@ export default function Index() {
                     return setDataArray(nonFavData);
                 } else return null
             } catch (e) {
-                // error reading value
+                console.error(e);
             }
         };
         getData();
