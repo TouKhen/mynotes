@@ -3,6 +3,7 @@ import {useEffect, useState} from "react";
 import { Link, Stack } from 'expo-router';
 import {FontAwesome} from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ScrollView } from "react-native-gesture-handler";
 
 export default function Index() {
     const [searchVisible, setSearchVisible] = useState(false);
@@ -10,14 +11,22 @@ export default function Index() {
     const [inputText, setInputText] = useState("");
     const [dataArray, setDataArray] = useState([]);
     const [filteredDataArray, setFilteredDataArray] = useState([]);
+    const [favoritesDataArray, setFavoritesDataArray] = useState([]);
 
     useEffect(() => {
         const getData = async () => {
             try {
                 const jsonValue = await AsyncStorage.getItem('notes');
                 if (jsonValue != null) {
-                    setFilteredDataArray(JSON.parse(jsonValue));
-                    return setDataArray(JSON.parse(jsonValue));
+                    let newData = JSON.parse(jsonValue);
+                    let newFavData = newData.filter((item) => item.favorite === true);
+                    setFavoritesDataArray(newFavData);
+
+                    let newNonFavData = JSON.parse(jsonValue);
+                    let nonFavData = newNonFavData.filter((item) => item.favorite !== true);
+
+                    setFilteredDataArray(nonFavData);
+                    return setDataArray(nonFavData);
                 } else return null
             } catch (e) {
                 // error reading value
@@ -77,76 +86,107 @@ export default function Index() {
             />
             {/* END OF HEADER */}
 
-            <Text style={styles.counter}>{dataArray.length} Notes</Text>
-
-            <View style={{flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between"}}>
-                <Text style={styles.subTitle}>Notes</Text>
-                <TouchableOpacity onPress={() => {
-                        setListVisible(!listVisible);
-                }}>
-                    {listVisible? (
-                        <FontAwesome size={28}  name="list" color={"#FCFCFC"}/>
-                    ): (
-                        <FontAwesome size={28}  name="th-large" color={"#FCFCFC"}/>
+            <ScrollView>
+                <Text style={styles.counter}>{dataArray.length} Notes</Text>
+    
+                <Text style={[styles.subTitle, {marginTop: 15}]}>Favorites</Text>
+    
+                <FlatList
+                    key={'-'}
+                    style={[{marginTop: 15}]}
+                    data={favoritesDataArray}
+                    horizontal={false}
+                    numColumns={1}
+                    renderItem={({item}) => (
+                        <Link href={{ pathname: "/note", params: {noteId: item.id}}} style={[styles.card]}>
+                            <Text style={styles.dataTitle}>{item.title}</Text>
+                            <FontAwesome style={{position: "absolute", right: 10, top: 10}} size={20}  name="star" color={"#FFD4CA"}/>
+                            <Text style={styles.dataText}>{item.text}</Text>
+                            <View style={styles.cardInfos}>
+                                {item.importance === "1" ?
+                                    <Text style={[styles.importanceUrgent, styles.importance]}>Urgent</Text>
+                                    : null}
+                                {item.importance === "2" ?
+                                    <Text style={[styles.importanceNormal,styles.importance]}>Normal</Text>
+                                    : null}
+                                {item.importance === "3" ?
+                                    <Text style={[styles.importanceLow,styles.importance]}>Low</Text>
+                                    : null}
+                                <Text style={styles.dataDate}>{item.date}</Text>
+                            </View>
+                        </Link>
                     )}
-                </TouchableOpacity>
-            </View>
-
-            {dataArray.length === 0 ? (
-                <Text style={{display:"flex", flex: 1, justifyContent:"center", alignItems: "center", fontFamily: "Montserrat_400Regular", fontSize: 16, color: "#FCFCFC80"}}>Create a note</Text>
-            ) : null}
-
-            {listVisible? 
-            <FlatList
-                key={'_'}
-                style={[{marginTop: 15}]}
-                data={filteredDataArray}
-                numColumns={2}
-                columnWrapperStyle={{gap: 10}}
-                renderItem={({item}) => (
-                    <Link href={{ pathname: "/note", params: {noteId: item.id}}} style={[styles.card, {width: "calc(50% - 5px)"}]}>
-                        <Text style={styles.dataTitle}>{item.title}</Text>
-                        <Text style={styles.dataText}>{item.text}</Text>
-                        <View style={styles.cardInfos}>
-                            {item.importance === "1" ?
-                                <Text style={[styles.importanceUrgent, styles.importance]}>Urgent</Text>
-                                : null}
-                            {item.importance === "2" ?
-                                <Text style={[styles.importanceNormal,styles.importance]}>Normal</Text>
-                                : null}
-                            {item.importance === "3" ?
-                                <Text style={[styles.importanceLow,styles.importance]}>Low</Text>
-                                : null}
-                            <Text style={styles.dataDate}>{item.date}</Text>
-                        </View>
-                    </Link>
-                )}
-            />
-            : <FlatList
-                key={'#'}
-                style={[{marginTop: 15}]}
-                data={filteredDataArray}
-                horizontal={false}
-                numColumns={1}
-                renderItem={({item}) => (
-                    <Link href={{ pathname: "/note", params: {noteId: item.id}}} style={[styles.card]}>
-                        <Text style={styles.dataTitle}>{item.title}</Text>
-                        <Text style={styles.dataText}>{item.text}</Text>
-                        <View style={styles.cardInfos}>
-                            {item.importance === "1" ?
-                                <Text style={[styles.importanceUrgent, styles.importance]}>Urgent</Text>
-                                : null}
-                            {item.importance === "2" ?
-                                <Text style={[styles.importanceNormal,styles.importance]}>Normal</Text>
-                                : null}
-                            {item.importance === "3" ?
-                                <Text style={[styles.importanceLow,styles.importance]}>Low</Text>
-                                : null}
-                            <Text style={styles.dataDate}>{item.date}</Text>
-                        </View>
-                    </Link>
-                )}
-            />}
+                />
+    
+                <View style={{flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between"}}>
+                    <Text style={styles.subTitle}>Notes</Text>
+                    <TouchableOpacity onPress={() => {
+                            setListVisible(!listVisible);
+                    }}>
+                        {listVisible? (
+                            <FontAwesome size={28}  name="list" color={"#FCFCFC"}/>
+                        ): (
+                            <FontAwesome size={28}  name="th-large" color={"#FCFCFC"}/>
+                        )}
+                    </TouchableOpacity>
+                </View>
+    
+                {dataArray.length === 0 ? (
+                    <Text style={{display:"flex", flex: 1, justifyContent:"center", alignItems: "center", fontFamily: "Montserrat_400Regular", fontSize: 16, color: "#FCFCFC80", marginTop: "50%"}}>Create a note</Text>
+                ) : null}
+    
+                {listVisible? 
+                <FlatList
+                    key={'_'}
+                    style={[{marginTop: 15}]}
+                    data={filteredDataArray}
+                    numColumns={2}
+                    columnWrapperStyle={{gap: 10}}
+                    renderItem={({item}) => (
+                        <Link href={{ pathname: "/note", params: {noteId: item.id}}} style={[styles.card, {width: "calc(50% - 5px)"}]}>
+                            <Text style={styles.dataTitle}>{item.title}</Text>
+                            <Text style={styles.dataText}>{item.text}</Text>
+                            <View style={styles.cardInfos}>
+                                {item.importance === "1" ?
+                                    <Text style={[styles.importanceUrgent, styles.importance]}>Urgent</Text>
+                                    : null}
+                                {item.importance === "2" ?
+                                    <Text style={[styles.importanceNormal,styles.importance]}>Normal</Text>
+                                    : null}
+                                {item.importance === "3" ?
+                                    <Text style={[styles.importanceLow,styles.importance]}>Low</Text>
+                                    : null}
+                                <Text style={styles.dataDate}>{item.date}</Text>
+                            </View>
+                        </Link>
+                    )}
+                />
+                : <FlatList
+                    key={'#'}
+                    style={[{marginTop: 15}]}
+                    data={filteredDataArray}
+                    horizontal={false}
+                    numColumns={1}
+                    renderItem={({item}) => (
+                        <Link href={{ pathname: "/note", params: {noteId: item.id}}} style={[styles.card]}>
+                            <Text style={styles.dataTitle}>{item.title}</Text>
+                            <Text style={styles.dataText}>{item.text}</Text>
+                            <View style={styles.cardInfos}>
+                                {item.importance === "1" ?
+                                    <Text style={[styles.importanceUrgent, styles.importance]}>Urgent</Text>
+                                    : null}
+                                {item.importance === "2" ?
+                                    <Text style={[styles.importanceNormal,styles.importance]}>Normal</Text>
+                                    : null}
+                                {item.importance === "3" ?
+                                    <Text style={[styles.importanceLow,styles.importance]}>Low</Text>
+                                    : null}
+                                <Text style={styles.dataDate}>{item.date}</Text>
+                            </View>
+                        </Link>
+                    )}
+                />}
+            </ScrollView>
 
             <Link style={styles.create} href="/noteForm">
                 <FontAwesome size={28} name="plus" color={"#252525"}/>
@@ -176,6 +216,7 @@ const styles = StyleSheet.create({
         marginTop: 20
     },
     create: {
+        flex: 1,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",

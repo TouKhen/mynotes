@@ -38,55 +38,6 @@ export default function RootLayout() {
     return (
         <Stack screenOptions={{headerShadowVisible: false}} style={{elevation: 0,shadowOpacity: 0,borderBottomWidth: 0,}}>
             <Stack.Screen
-                name="note"
-                options={{
-                    title: "back",
-                    headerStyle: {
-                        backgroundColor: "#252525",
-                        color: "#FCFCFC",
-                        elevation: 0,
-                        shadowOpacity: 0,
-                        borderBottomWidth: 0,
-                        textTransform: "uppercase"
-                    },
-                    headerTitleStyle: {
-                        color: "#FCFCFC",
-                        fontFamily: "Montserrat_600SemiBold",
-                        fontSize: 14,
-                        textTransform: "uppercase"
-                    },
-                    headerTintColor: "#FCFCFC",
-                    headerRight: () => (
-                        <View style={{display: "flex", flexDirection: "row"}}>
-                            <Link href={{ pathname: "/editNote", params: {noteId: noteId}}} style={{marginRight: 20}} onPress={() => {}}>
-                                <FontAwesome size={28}  name="pencil" color={"#FFD4CA"}/>
-                            </Link>
-                        </View>
-                    )
-                }}
-            />
-            <Stack.Screen
-                name="noteForm"
-                options={{
-                    title: "back",
-                    headerStyle: {
-                        backgroundColor: "#252525",
-                        color: "#FCFCFC",
-                        elevation: 0,
-                        shadowOpacity: 0,
-                        borderBottomWidth: 0,
-                        textTransform: "uppercase"
-                    },
-                    headerTitleStyle: {
-                        color: "#FCFCFC",
-                        fontFamily: "Montserrat_600SemiBold",
-                        fontSize: 14,
-                        textTransform: "uppercase"
-                    },
-                    headerTintColor: "#FCFCFC",
-                }}
-            />
-            <Stack.Screen
                 name="editNote"
                 options={{
                     title: "back",

@@ -3,18 +3,20 @@ import {
     View,
     StyleSheet,
     TextInput,
-    TouchableOpacity
+    TouchableOpacity,
 } from "react-native";
 import {useState, useMemo} from "react";
 import RadioGroup from 'react-native-radio-buttons-group';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {useRouter} from 'expo-router';
+import {useRouter, Stack} from 'expo-router';
+import { ScrollView } from "react-native-gesture-handler";
 
 const noteForm = () => {
     const router = useRouter();
     const [title, setTitle] = useState('');
     const [importance, setImportance] = useState('');
     const [text, setText] = useState('');
+    const [height, setHeight] = useState(0);
 
     const radioButtons = useMemo(() => ([
         {
@@ -57,12 +59,12 @@ const noteForm = () => {
         let data = await getData();
 
         // if data is empty add noteJson inside array
-        if (data.length === 0) {
-            noteJson = {"id": 1, title, importance, text, "date": today};
+        if (data === null || data.length === 0) {
+            noteJson = {"id": 1, title, importance, text, "date": today, favorite: false};
             data = [noteJson];
         } else {
             // get latest note id and increment
-            noteJson = {"id": data[data.length - 1].id + 1,title, importance, text, "date": today};
+            noteJson = {"id": data[data.length - 1].id + 1,title, importance, text, "date": today, favorite: false};
             data.push(noteJson);
         }
 
@@ -76,7 +78,34 @@ const noteForm = () => {
 
     return (
         <View style={styles.pageContainer}>
-            <View style={styles.formContainer}>
+            <Stack.Screen
+                title="noteForm"
+                options={{
+                    title: "back",
+                    headerStyle: {
+                        backgroundColor: "#252525",
+                        color: "#FCFCFC",
+                        elevation: 0,
+                        shadowOpacity: 0,
+                        borderBottomWidth: 0,
+                        textTransform: "uppercase"
+                    },
+                    headerTitleStyle: {
+                        color: "#FCFCFC",
+                        fontFamily: "Montserrat_600SemiBold",
+                        fontSize: 14,
+                        textTransform: "uppercase"
+                    },
+                    headerTintColor: "#FCFCFC",
+                    headerRight: () => (
+                        <TouchableOpacity style={styles.submit} title="Add Note" onPress={() => {handleSubmit(title, importance, text)}}>
+                            <Text style={styles.submitText}>Create</Text>
+                        </TouchableOpacity>
+                    )
+                }}
+            />
+
+            <ScrollView style={styles.formContainer}>
                 <TextInput
                     style={styles.input}
                     title="title"
@@ -97,19 +126,19 @@ const noteForm = () => {
                 />
     
                 <TextInput
-                    style={[styles.input, {marginTop: 15}]}
+                    style={[styles.input, {marginTop: 15}, { height: Math.max(35, height) }]}
                     title="text"
                     placeholder="Text"
                     placeholderTextColor="#FCFCFC80"
                     multiline
-                    numberOfLines={10}
+                    textAlignVertical="top"
                     onChangeText={newText => {setText(newText)}}
                     defaultValue={text}
+                    onContentSizeChange={(event) =>
+                        setHeight(event.nativeEvent.contentSize.height)
+                    }
                 />
-                <TouchableOpacity style={styles.submit} title="Add Note" onPress={() => {handleSubmit(title, importance, text)}}>
-                    <Text style={styles.submitText}>Create</Text>
-                </TouchableOpacity>
-            </View>
+            </ScrollView>
         </View>
     );
 }
@@ -124,6 +153,7 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     formContainer: {
+        flex: 1,
         backgroundColor: "#323232",
         borderRadius: 10,
         padding: 10
@@ -147,16 +177,12 @@ const styles = StyleSheet.create({
         marginBottom: 15,
     },
     submit: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#FCFCFC",
-        paddingVertical: 10,
-        borderRadius: 10
+        marginRight: 20
     },
     submitText: {
-        color: "#1C1C1C",
+        color: "#FCFCFC",
         fontFamily: "Montserrat_600SemiBold",
+        fontSize: 14,
         textTransform: "uppercase"
     },
     radio: {

@@ -2,13 +2,17 @@ import {
     Text,
     View,
     StyleSheet, FlatList, ScrollView,
+    TouchableOpacity,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useEffect, useState} from "react";
-import {useLocalSearchParams} from "expo-router";
+import {useLocalSearchParams, Stack, Link} from "expo-router";
+import {FontAwesome} from "@expo/vector-icons";
 
 const note = () => {
+    const [notesDataArray, setNotesDataArray] = useState([]);
     const [noteData, setNoteData] = useState({});
+    const [favorite, setFavorite] = useState(false);
     const {noteId} = useLocalSearchParams();
 
     useEffect(() => {
@@ -18,6 +22,7 @@ const note = () => {
                 if (jsonValue != null) {
                     const dataArray = JSON.parse(jsonValue);
                     const newData = dataArray.filter((data) => data.id === parseInt(noteId));
+                    setFavorite(newData[0].favorite);
                     return setNoteData(newData[0]);
                 } else {
                     return null
@@ -29,8 +34,81 @@ const note = () => {
         getData();
     }, []);
 
+    // get all notes
+    useEffect(() => {
+        const getData = async () => {
+            try {
+                const jsonValue = await AsyncStorage.getItem('notes');
+                if (jsonValue != null) {
+                    let data = JSON.parse(jsonValue);
+                    return setNotesDataArray(data);
+                } else return null
+            } catch (e) {
+                // error reading value
+            }
+        };
+        getData();
+    }, []);
+
+    // handlesubmit to make the note a favorite
+    const handleSubmit = async (fav) => {
+        setFavorite(!favorite);
+
+        const newData = notesDataArray.map((item) => {
+            if (item.id === parseInt(noteId)) {
+                item.favorite = fav;
+            }
+
+            return item;
+        });
+
+        try {
+            await AsyncStorage.setItem('notes', JSON.stringify(newData));
+            return true;
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
     return (
         <ScrollView style={styles.pageContainer}>
+            <Stack.Screen
+                title="Note"
+                options={{
+                    title: "back",
+                    headerStyle: {
+                        backgroundColor: "#252525",
+                        color: "#FCFCFC",
+                        elevation: 0,
+                        shadowOpacity: 0,
+                        borderBottomWidth: 0,
+                        textTransform: "uppercase"
+                    },
+                    headerTitleStyle: {
+                        color: "#FCFCFC",
+                        fontFamily: "Montserrat_600SemiBold",
+                        fontSize: 14,
+                        textTransform: "uppercase"
+                    },
+                    headerTintColor: "#FCFCFC",
+                    headerRight: () => (
+                        <View style={{display: "flex", flexDirection: "row"}}>
+                            <TouchableOpacity style={{marginRight: 15}} onPress={() => {handleSubmit(!favorite)}}>
+                                {favorite === true ? (
+                                    <FontAwesome size={28}  name="star" color={"#FFD4CA"}/>
+                                ):(
+                                    <FontAwesome size={28}  name="star-o" color={"#FFD4CA"}/>
+                                )}
+                            </TouchableOpacity>
+                            
+                            <Link href={{ pathname: "/editNote", params: {noteId: noteId}}} style={{marginRight: 20}} onPress={() => {}}>
+                                <FontAwesome size={28}  name="pencil" color={"#FFD4CA"}/>
+                            </Link>
+                        </View>
+                    )
+                }}
+            />
+
             <Text style={styles.dataTitle}>{noteData.title}</Text>
             <View style={styles.cardInfos}>
                 {noteData.importance === "1" ?

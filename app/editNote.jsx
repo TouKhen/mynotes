@@ -13,6 +13,7 @@ import RadioGroup from 'react-native-radio-buttons-group';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useLocalSearchParams, useRouter} from 'expo-router';
 import {FontAwesome} from "@expo/vector-icons";
+import { ScrollView } from "react-native-gesture-handler";
 
 const noteForm = () => {
     const router = useRouter();
@@ -21,6 +22,7 @@ const noteForm = () => {
     const [title, setTitle] = useState('');
     const [importance, setImportance] = useState('');
     const [text, setText] = useState('');
+    const [height, setHeight] = useState(0);
     const {noteId} = useLocalSearchParams();
 
     const radioButtons = useMemo(() => ([
@@ -103,73 +105,78 @@ const noteForm = () => {
 
     return (
         <View style={styles.pageContainer}>
-            <Text style={styles.text}>Importance :</Text>
-
-            <RadioGroup
-                radioButtons={radioButtons}
-                onPress={setImportance}
-                selectedId={importance}
-                layout="row"
-                labelStyle={styles.radio}
-            />
-
-            <TextInput
-                style={[styles.input, {marginTop: 15}]}
-                title="title"
-                placeholderTextColor="#FCFCFC80"
-                placeholder="Title"
-                onChangeText={newTitle => {setTitle(newTitle)}}
-                defaultValue={title}
-            />
-
-            <TextInput
-                style={styles.input}
-                title="text"
-                placeholder="Text"
-                placeholderTextColor="#FCFCFC80"
-                multiline
-                numberOfLines={10}
-                onChangeText={newText => {setText(newText)}}
-                defaultValue={text}
-            />
-            <TouchableOpacity style={styles.submit} title="Add Note" onPress={() => {handleSubmit(title, importance, text)}}>
-                <Text style={styles.submitText}>Edit</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.remove} title="Add Note" onPress={() => setModalVisible(true)}>
-                <Text style={[styles.submitText, {color: "#FCFCFC"}]}>Delete</Text>
-            </TouchableOpacity>
-
-            <Modal
-                animationType="none"
-                transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => {
-                Alert.alert('Modal has been closed.');
-                setModalVisible(!modalVisible);
-                }}>
-                <View style={styles.centeredView}>
-                <View style={styles.modalView}>
-                    <FontAwesome size={28}  name="exclamation-triangle" color={"#F45869"}/>
-                    <Text style={styles.modalText}>Are you sure?</Text>
-                    <View style={styles.modalBtnContainer}>
-                        <Pressable
-                        style={[styles.button, styles.buttonClose]}
-                        onPress={() => setModalVisible(!modalVisible)}>
-                            <Text style={styles.textStyle}>Cancel</Text>
-                        </Pressable>
-                        <Pressable
-                        style={[styles.button, styles.buttonAccept]}
-                        onPress={() => {
-                            deleteNote(noteId);
-                            setModalVisible(!modalVisible);
-                        }}>
-                            <Text style={[styles.textStyle, {color: "#FCFCFC"}]}>Delete</Text>
-                        </Pressable>
+            <ScrollView style={styles.formContainer}>
+                <TextInput
+                    style={[styles.input]}
+                    title="title"
+                    placeholderTextColor="#FCFCFC80"
+                    placeholder="Title"
+                    onChangeText={newTitle => {setTitle(newTitle)}}
+                    defaultValue={title}
+                />
+                
+                <Text style={styles.text}>Importance :</Text>
+    
+                <RadioGroup
+                    radioButtons={radioButtons}
+                    onPress={setImportance}
+                    selectedId={importance}
+                    layout="row"
+                    labelStyle={styles.radio}
+                />
+    
+                <TextInput
+                    style={[styles.input, {marginTop: 15}, { height: Math.max(35, height) }]}
+                    title="text"
+                    placeholder="Text"
+                    placeholderTextColor="#FCFCFC80"
+                    multiline
+                    textAlignVertical="top"
+                    onChangeText={newText => {setText(newText)}}
+                    defaultValue={text}
+                    onContentSizeChange={(event) =>
+                        setHeight(event.nativeEvent.contentSize.height)
+                    }
+                />
+                <TouchableOpacity style={styles.submit} title="Add Note" onPress={() => {handleSubmit(title, importance, text)}}>
+                    <Text style={styles.submitText}>Edit</Text>
+                </TouchableOpacity>
+    
+                <TouchableOpacity style={styles.remove} title="Add Note" onPress={() => setModalVisible(true)}>
+                    <Text style={[styles.submitText, {color: "#FCFCFC"}]}>Delete</Text>
+                </TouchableOpacity>
+    
+                <Modal
+                    animationType="none"
+                    transparent={true}
+                    visible={modalVisible}
+                    onRequestClose={() => {
+                    Alert.alert('Modal has been closed.');
+                    setModalVisible(!modalVisible);
+                    }}>
+                    <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <FontAwesome size={28}  name="exclamation-triangle" color={"#F45869"}/>
+                        <Text style={styles.modalText}>Are you sure?</Text>
+                        <View style={styles.modalBtnContainer}>
+                            <Pressable
+                            style={[styles.button, styles.buttonClose]}
+                            onPress={() => setModalVisible(!modalVisible)}>
+                                <Text style={styles.textStyle}>Cancel</Text>
+                            </Pressable>
+                            <Pressable
+                            style={[styles.button, styles.buttonAccept]}
+                            onPress={() => {
+                                deleteNote(noteId);
+                                setModalVisible(!modalVisible);
+                            }}>
+                                <Text style={[styles.textStyle, {color: "#FCFCFC"}]}>Delete</Text>
+                            </Pressable>
+                        </View>
                     </View>
-                </View>
-                </View>
-            </Modal>
+                    </View>
+                </Modal>
+            </ScrollView>
         </View>
     );
 }
@@ -182,6 +189,12 @@ const styles = StyleSheet.create({
         flex: 1,
         color: "#FCFCFC",
         padding: 20,
+    },
+    formContainer: {
+        flex: 1,
+        backgroundColor: "#323232",
+        borderRadius: 10,
+        padding: 10
     },
     text: {
         fontSize: 16,
