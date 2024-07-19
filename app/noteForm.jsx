@@ -4,12 +4,14 @@ import {
     StyleSheet,
     TextInput,
     TouchableOpacity,
+    FlatList,
 } from "react-native";
-import {useState, useMemo} from "react";
+import {useState, useMemo, useEffect} from "react";
 import RadioGroup from 'react-native-radio-buttons-group';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useRouter, Stack} from 'expo-router';
 import { ScrollView } from "react-native-gesture-handler";
+import {FontAwesome} from "@expo/vector-icons";
 
 const noteForm = () => {
     const router = useRouter();
@@ -17,6 +19,7 @@ const noteForm = () => {
     const [importance, setImportance] = useState('');
     const [text, setText] = useState('');
     const [height, setHeight] = useState(0);
+    const [checkboxArray, setCheckboxArray] = useState([]);
 
     const radioButtons = useMemo(() => ([
         {
@@ -76,6 +79,12 @@ const noteForm = () => {
         }
     }
 
+    const addCheckbox = () => {
+        let newCheckbox = checkboxArray;
+        newCheckbox.push({id: checkboxArray.length + 1, text: "", active: false});
+        setCheckboxArray(newCheckbox);
+    }
+
     return (
         <View style={styles.pageContainer}>
             <Stack.Screen
@@ -124,6 +133,31 @@ const noteForm = () => {
                     layout="row"
                     labelStyle={styles.radio}
                 />
+
+                <Text style={[styles.text, {marginTop: 15}]}>Checklist :</Text>
+
+                <View style={[styles.input, styles.checkboxContainer]}>
+                    <FlatList 
+                        data={checkboxArray}
+                        refreshing={true}
+                        renderItem={({item}) => (
+                            <View style={styles.checkboxRow}>
+                                <TouchableOpacity>
+                                    {item.active === true ? (
+                                        <FontAwesome size={24}  name="check-square" color={"#FCFCFC"}/>
+                                    ):(
+                                        <FontAwesome size={24}  name="square-o" color={"#FCFCFC"}/>
+                                    )}
+                                </TouchableOpacity>
+                                <TextInput style={[styles.checkboxInput, {borderBottom: "1px solid white"}]} defaultValue={item.text} autoFocus />
+                            </View>
+                        )} 
+                    />
+                    <TouchableOpacity style={styles.checkboxRow} onPress={() => {addCheckbox()}}>
+                        <FontAwesome size={24}  name="plus" color={"#FCFCFC"}/>
+                        <Text style={styles.checkboxInput}>Add</Text>
+                    </TouchableOpacity>
+                </View>
     
                 <TextInput
                     style={[styles.input, {marginTop: 15}, { height: Math.max(35, height) }]}
@@ -189,5 +223,21 @@ const styles = StyleSheet.create({
         color: "#FCFCFC",
         fontFamily: "Montserrat_600SemiBold",
         textTransform: "uppercase"
+    },
+    checkboxContainer: {
+        display: "flex",
+        gap: 5
+    },
+    checkboxRow: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10
+    },
+    checkboxInput: {
+        flex: 1,
+        fontSize: 16,
+        color: "#FCFCFC",
+        fontFamily: "Montserrat_400Regular",
     }
 });
